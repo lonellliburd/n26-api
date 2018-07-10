@@ -1,30 +1,69 @@
 package controllers;
 
-import org.springframework.util.CollectionUtils;
-
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class TransactionManager {
-    private static double sum, avg, max, min;
-    private static long count;
-
+    private static PriorityBlockingQueue<Request> queue = new PriorityBlockingQueue<>(11, (r1, r2)
+            ->  new Long(r1.getTimestamp()).compareTo(r2.getTimestamp()));
 
     public static boolean handleTransaction(Request request){
-        List<String> errors = new ArrayList<>();
-        validate(request, errors);
+        queue.add(request);
+        return lessThanSixtySeconds(request.getTimestamp());
+    }
 
-        return CollectionUtils.isEmpty(errors);
+    public static Response getStatistics(){
+        Response response = new Response();
+        Iterator<Request> iterator = queue.iterator();
+        while (iterator.hasNext()){
+            Request r = iterator.next();
+            if (lessThanSixtySeconds(r.getTimestamp())) {
+                calculate(response, r.getAmount());
+            }
+        }
+        return response;
     }
 
     private static void validate(Request request, List<String> errors){
-        if (moreThanSixtySeconds(request.getTimestamp())){
-            errors.add("More than 60 seconds");
+        if (request == null){
+            errors.add("Request empty");
+        } else {
+            if (request.getTimestamp() <= 0){
+                errors.add("Timestamp cannot be 0.");
+            }
+
         }
+
+    }
+    
+    private static boolean lessThanSixtySeconds(long time){
+        return ((System.currentTimeMillis() - time ) / 1000) < 60;
     }
 
-    private static boolean moreThanSixtySeconds(long time){
-        return ((System.currentTimeMillis() % 1000) - time ) / 1000 > 60;
+    private static void calculate(Response response, double amount){
+        double sum;
+        long count;
 
+        if (amount >= response.getMax()){
+            response.setMax(amount);
+        }
+
+        if (amount <= response.getMin()){
+            response.setMin(amount);
+        }
+
+        sum = response.getSum() + amount;
+        response.setSum(sum);
+
+        count = response.getCount() + 1;
+        response.setCount(count);
+
+        response.setAvg(sum/count);
+    }
+
+    public static void reset(){
+        queue = new PriorityBlockingQueue<>(11, (r1, r2)
+                ->  new Long(r1.getTimestamp()).compareTo(r2.getTimestamp()));
     }
 }
