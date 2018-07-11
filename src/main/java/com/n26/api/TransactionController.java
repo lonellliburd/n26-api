@@ -1,4 +1,4 @@
-package controllers;
+package com.n26.api;
 
 
 import org.springframework.http.HttpStatus;

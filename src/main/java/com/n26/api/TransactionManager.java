@@ -1,4 +1,4 @@
-package controllers;
+package com.n26.api;
 
 import java.util.Iterator;
 import java.util.concurrent.PriorityBlockingQueue;

@@ -1,5 +1,6 @@
-import controllers.Application;
-import controllers.Request;
+import com.n26.api.Application;
+import com.n26.api.Request;
+import com.n26.api.TransactionManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Calendar;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -31,11 +33,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 public class TransactionControllerTest {
 
-    private HttpMessageConverter mappingJackson2HttpMessageConverter;
+    private HttpMessageConverter Jackson2HttpMessageConverter;
 
     private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
-            MediaType.APPLICATION_JSON.getSubtype(),
-            Charset.forName("utf8"));
+            MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,34 +44,17 @@ public class TransactionControllerTest {
     @Autowired
     void setConverters(HttpMessageConverter<?>[] converters) {
 
-        this.mappingJackson2HttpMessageConverter = Arrays.asList(converters).stream()
-                .filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter)
+        this.Jackson2HttpMessageConverter = Arrays.asList(converters).stream()
+                .filter(httpmc -> httpmc instanceof MappingJackson2HttpMessageConverter)
                 .findAny()
                 .orElse(null);
 
-        assertNotNull("the JSON message converter must not be null",
-                this.mappingJackson2HttpMessageConverter);
+        assertNotNull("Null", this.Jackson2HttpMessageConverter);
     }
 
     @Before
     public void setup() throws Exception {
-
-    }
-
-//    @Test
-//    public void testReturnInitialisationValues() throws Exception{
-//        this.mockMvc.perform(get("/statistic"))
-//                .andExpect(status().is(200))
-//                .andExpect(content().contentType(contentType))
-//                .andExpect(this.json(new Response().setAvg(0.0)));
-//    }
-
-    @Test
-    public void testSendExpiredTimestamp() throws Exception{
-        mockMvc.perform(post("/transactions")
-                .content(this.json(new Request().setAmount(100).setTimestamp(1531191965158L)))
-                .contentType(contentType))
-                .andExpect(status().is(204));
+        TransactionManager.reset();
     }
 
     @Test
@@ -79,6 +63,14 @@ public class TransactionControllerTest {
                 .content(this.json(new Request().setAmount(100).setTimestamp(System.currentTimeMillis())))
                 .contentType(contentType))
                 .andExpect(status().is(201));
+    }
+
+    @Test
+    public void testSendExpiredTimestamp() throws Exception{
+        mockMvc.perform(post("/transactions")
+                .content(this.json(new Request().setAmount(100).setTimestamp(1531191965158L)))
+                .contentType(contentType))
+                .andExpect(status().is(204));
     }
 
     @Test
@@ -105,11 +97,43 @@ public class TransactionControllerTest {
                 response.getContentAsString());
     }
 
+    @Test
+    public void testSubmitMultipleAndGetStatistic() throws Exception {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -1);
+
+        mockMvc.perform(post("/transactions")
+                .content(this.json(new Request().setAmount(100).setTimestamp(System.currentTimeMillis())))
+                .contentType(contentType))
+                .andExpect(status().is(201));
+
+        mockMvc.perform(post("/transactions")
+                .content(this.json(new Request().setAmount(200).setTimestamp(System.currentTimeMillis()+20000)))
+                .contentType(contentType))
+                .andExpect(status().is(201));
+
+        mockMvc.perform(post("/transactions")
+                .content(this.json(new Request().setAmount(300).setTimestamp(cal.getTimeInMillis())))
+                .contentType(contentType))
+                .andExpect(status().is(204));
+
+        mockMvc.perform(post("/transactions")
+                .content(this.json(new Request().setAmount(300).setTimestamp(System.currentTimeMillis()+40000)))
+                .contentType(contentType))
+                .andExpect(status().is(201));
+
+        MockHttpServletResponse response = mockMvc.perform(get("/statistic")
+                .contentType(contentType))
+                .andReturn().getResponse();
+
+        assertEquals(200, response.getStatus());
+        assertEquals("{\"sum\":600.0,\"avg\":200.0,\"max\":300.0,\"min\":100.0,\"count\":3}",
+                response.getContentAsString());
+    }
 
     protected String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        this.mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        this.Jackson2HttpMessageConverter.write(o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
         return mockHttpOutputMessage.getBodyAsString();
     }
 }

@@ -1,6 +1,6 @@
-import controllers.Request;
-import controllers.Response;
-import controllers.TransactionManager;
+import com.n26.api.Request;
+import com.n26.api.Response;
+import com.n26.api.TransactionManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.test.annotation.DirtiesContext;

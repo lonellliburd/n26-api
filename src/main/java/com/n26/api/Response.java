@@ -1,4 +1,4 @@
-package controllers;
+package com.n26.api;
 
 public class Response {
 
