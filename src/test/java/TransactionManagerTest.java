@@ -29,7 +29,7 @@ public class TransactionManagerTest {
 //    @Test
 //    public void testEmptyRequest() throws Exception{
 //        boolean response = TransactionManager.handleTransaction(new Request());
-//        assertTrue(response);
+//        assertFalse(response);
 //    }
 
 //    @Test
@@ -41,7 +41,7 @@ public class TransactionManagerTest {
 //    @Test
 //    public void testMissingAmount() throws Exception{
 //        boolean response = TransactionManager.handleTransaction(new Request().setTimestamp(timeAtExecution));
-//        assertTrue(response);
+//        assertFalse(response);
 //    }
 
     @Test
@@ -58,24 +58,24 @@ public class TransactionManagerTest {
         assertFalse(response);
     }
 
-    @Test //TODO: make threaded
+    @Test
     public void testCalculateSum() throws Exception{
         Request request = new Request().setTimestamp(timeAtExecution).setAmount(100);
         assertTrue(TransactionManager.handleTransaction(request));
 
         Response response = TransactionManager.getStatistics();
-
         assertEquals(100.0, response.getSum());
+
         request = new Request().setTimestamp(System.currentTimeMillis()).setAmount(200);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(300.0, response.getSum());
 
         request = new Request().setTimestamp(System.currentTimeMillis()).setAmount(300);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(600.0, response.getSum());
     }
 
@@ -85,18 +85,18 @@ public class TransactionManagerTest {
         assertTrue(TransactionManager.handleTransaction(request));
 
         Response response = TransactionManager.getStatistics();
-
         assertEquals(100.0, response.getMax());
+
         request = new Request().setTimestamp(timeAtExecution).setAmount(200);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(200.0, response.getMax());
 
         request = new Request().setTimestamp(timeAtExecution).setAmount(300);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(300.0, response.getMax());
     }
 
@@ -107,18 +107,18 @@ public class TransactionManagerTest {
         assertTrue(TransactionManager.handleTransaction(request));
 
         Response response = TransactionManager.getStatistics();
-
         assertEquals(100.0, response.getMin());
+
         request = new Request().setTimestamp(timeAtExecution).setAmount(200);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(100.0, response.getMin());
 
         request = new Request().setTimestamp(timeAtExecution).setAmount(300);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(100.0, response.getMin());
     }
 
@@ -128,18 +128,18 @@ public class TransactionManagerTest {
         assertTrue(TransactionManager.handleTransaction(request));
 
         Response response = TransactionManager.getStatistics();
-
         assertEquals(100.0, response.getAvg());
+
         request = new Request().setTimestamp(timeAtExecution).setAmount(200);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(150.0, response.getAvg());
 
         request = new Request().setTimestamp(timeAtExecution).setAmount(300);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(200.0, response.getAvg());
     }
 
@@ -149,18 +149,18 @@ public class TransactionManagerTest {
         assertTrue(TransactionManager.handleTransaction(request));
 
         Response response = TransactionManager.getStatistics();
-
         assertEquals(1, response.getCount());
+
         request = new Request().setTimestamp(timeAtExecution).setAmount(200);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(2, response.getCount());
 
         request = new Request().setTimestamp(timeAtExecution).setAmount(300);
         assertTrue(TransactionManager.handleTransaction(request));
-        response = TransactionManager.getStatistics();
 
+        response = TransactionManager.getStatistics();
         assertEquals(3, response.getCount());
     }
 

@@ -2,8 +2,6 @@ package controllers;
 
 public class Response {
 
-//    private static volatile Response instance = new Response();
-
     private double sum;
     private double avg;
     private double max;
@@ -17,23 +15,6 @@ public class Response {
         min = 9999999;
         count = 0;
     }
-
-//    public static Response getInstance(){
-//        if (instance == null){
-//
-//            synchronized (Response.class){
-//                if (instance == null){
-//                    instance = new Response();
-//                }
-//            }
-//        }
-//        return instance;
-//    }
-//
-//    public static Response reset(){
-//        instance = null;
-//        return getInstance();
-//    }
 
     public double getSum() {
         return sum;

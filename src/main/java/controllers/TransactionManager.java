@@ -1,7 +1,6 @@
 package controllers;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class TransactionManager {
@@ -25,18 +24,6 @@ public class TransactionManager {
         return response;
     }
 
-    private static void validate(Request request, List<String> errors){
-        if (request == null){
-            errors.add("Request empty");
-        } else {
-            if (request.getTimestamp() <= 0){
-                errors.add("Timestamp cannot be 0.");
-            }
-
-        }
-
-    }
-    
     private static boolean lessThanSixtySeconds(long time){
         return ((System.currentTimeMillis() - time ) / 1000) < 60;
     }
